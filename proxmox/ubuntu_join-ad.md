@@ -4,7 +4,7 @@
 Windows Server 2025 introduced a Kerberos protocol regression that breaks Linux domain joins. When using `realm join` or `adcli`, the process fails at the password setting stage due to a malformed Kerberos response from the domain controller.
 
 This document was made in conjunction with ChatGPT 4o.  
-OpenAI. (2024). *ChatGPT (May 2025 version) [Large language model]*. https://chat.openai.com/
+OpenAI. (2025). *ChatGPT (May 2025 version) [Large language model]*. https://chat.openai.com/
 
 ⚠️ **Warning:** This process will expose plaintext traffic on your network and should only be followed in a **lab environment**.  
 This is a workaround for academic purposes, not a production solution.
