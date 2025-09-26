@@ -1,0 +1,141 @@
+---
+title: "Rochester Police Department - Crime Scene Mapping"
+author: "Ethan Covert"
+date: "2025-02-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+
+This script will showcase homicides around the city of Rochester.
+
+The homicide pins are sorted by the weapon used, you can check/uncheck the boxes for which to display. Clicking on the pins will reveal metadata of the case such as Case Number, Victim Name, Date. 
+
+Using the Case status checkbox will display the state of all cases - wether they are open, closed, or if the suspect is arrested.
+
+```{r pressure, echo=FALSE, warning=FALSE, message=FALSE, error=FALSE}
+# Clear all memory & suppress gc() output
+rm(list = ls())
+invisible(gc())  # Prevents "mb" output
+
+# Load necessary libraries
+library(leaflet)
+library(readxl)
+library(dplyr)
+library(leaflet.extras2)  # Enables filtering/sorting
+
+# Load the dataset
+file_path <- "givens/RPD Homicide_2425.xlsx"
+df <- read_excel(file_path, sheet = "Homicides in RochesterNY_0")
+
+# Trim spaces in WeaponCategory (prevents matching issues)
+df$WeaponCategory <- trimws(df$WeaponCategory)
+
+# Select relevant columns and rename for clarity
+df <- df %>%
+  select(x, y, WeaponCategory, CaseNumber, CaseStatus, OccurredDate, 
+         PersonName, ArresteeCount) %>%
+  rename(Longitude = x, Latitude = y, Weapon = WeaponCategory, 
+         Case = CaseNumber, Status = CaseStatus, 
+         Date = OccurredDate, Victim = PersonName, Arrested = ArresteeCount)
+
+# Convert arrest count to Yes/No format
+df$Arrested <- ifelse(df$Arrested > 0, "Yes", "No")
+
+# Offset longitude slightly for the secondary icon (right side of pin)
+df$Longitude_offset <- df$Longitude + 0.0003  # Small offset to the right
+
+# Assign icons based on case status
+df$secondary_icon <- case_when(
+  df$Status == "Closed" ~ "gavel",  
+  df$Arrested == "Yes" ~ "lock",    
+  df$Arrested == "No" ~ "exclamation",  
+  TRUE ~ ""  
+)
+
+# Create popup content with HTML formatting
+df$popup_info <- paste0(
+  "<b>Case Number:</b> ", df$Case, "<br>",
+  "<b>Status:</b> ", df$Status, "<br>",
+  "<b>Date:</b> ", df$Date, "<br>",
+  "<b>Victim:</b> ", df$Victim, "<br>",
+  "<b>Arrest Made?</b> ", df$Arrested
+)
+
+# Define icons for weapon types (main pin)
+weapon_icons <- awesomeIcons(
+  icon = case_when(
+    df$Weapon == "Firearm" ~ "crosshairs",
+    df$Weapon == "Knife/Cutting Instrument" ~ "cut",
+    df$Weapon == "Physical" ~ "hand-rock-o",
+    df$Weapon == "Other" ~ "question"
+  ),
+  iconColor = "white",
+  markerColor = "darkblue",
+  library = "fa"
+)
+
+# Define secondary icons (gavel, lock, or exclamation based on case status)
+status_icons <- awesomeIcons(
+  icon = df$secondary_icon,
+  iconColor = "black",
+  markerColor = "transparent",
+  library = "fa"
+)
+
+# Get unique weapon categories
+weapon_groups <- unique(df$Weapon)
+
+# Create Leaflet map with "Case Status" unchecked by default
+leaflet(df) %>%
+  addTiles() %>%
+  
+  # Add main marker layers (weapon type)
+  addAwesomeMarkers(
+    lng = ~Longitude, lat = ~Latitude,
+    icon = weapon_icons,
+    popup = ~df$popup_info,
+    group = df$Weapon
+  ) %>%
+  
+  # Add secondary offset icons for case status/arrest
+  addAwesomeMarkers(
+    lng = ~Longitude_offset, lat = ~Latitude,  
+    icon = status_icons,
+    popup = ~df$popup_info,
+    group = "Case Status"
+  ) %>%
+  
+  # Sorting checkboxes: All checked EXCEPT "Case Status"
+  addLayersControl(
+    overlayGroups = c(weapon_groups, "Case Status"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  
+  # Hide "Case Status" by default so it's unchecked at load
+  hideGroup("Case Status") %>%
+  
+  # Add custom legend for weapon types and case status
+  addControl(
+    html = paste0(
+      "<div style='background: white; padding: 10px; border-radius: 5px;'>",
+      "<b>Weapon Type Legend</b><br>",
+      "<i class='fa fa-crosshairs'></i> Firearm <br>",
+      "<i class='fa fa-cut'></i> Knife <br>",
+      "<i class='fa fa-hand-rock-o'></i> Physical <br>",
+      "<i class='fa fa-question'></i> Other <br>",
+      "<br><b>Case Status:</b><br>",
+      "<i class='fa fa-gavel'></i> Case Closed <br>",
+      "<i class='fa fa-lock'></i> Arrest Made <br>",
+      "<i class='fa fa-exclamation'></i> Open Case - No Arrest <br>",
+      "</div>"
+    ), 
+    position = "bottomright"
+  )
+
+```
+

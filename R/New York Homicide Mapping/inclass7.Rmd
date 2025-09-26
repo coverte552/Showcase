@@ -1,0 +1,80 @@
+---
+title: "New York Homicide Mapping"
+author: "Ethan Covert"
+date: "2025-03-04"
+output: html_document
+---
+
+## Introduction
+
+This R Script plots homicide mappings in Buffalo and Rochester. Each point on the map contains the: 
+
+Case Number | Time/Date | City | Neighborhood
+
+Please keep in mind this data set is incomplete and could lead to false conclusions. 
+
+## ⚠️Take this plotted map as a work in progress⚠️
+*Note: One city has data from several more years then the other.
+```{r setup, include=FALSE}
+# Prevents messages from printing in the output
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(leaflet)
+library(lubridate)
+# Read and clean Buffalo data
+buffalo_df <- read_csv("Buffalo_Homicide_Data.csv", col_types = cols()) %>%
+  select(`Case Number`, `Incident Datetime`, City, Latitude, Longitude, neighborhood) %>%
+  rename(Neighborhood = neighborhood) %>%
+  mutate(
+    Latitude = as.numeric(Latitude),
+    Longitude = as.numeric(Longitude),
+    Year = as.character(year(mdy_hms(`Incident Datetime`)))  # Extract Year for reference
+  )
+
+# Read and clean Rochester data
+rochester_df <- read_csv("RPD_Homicide_Data.csv", col_types = cols()) %>%
+  select(CaseNumber, OccurredDate, Latitude, Longitude, Section) %>%
+  rename(`Case Number` = CaseNumber,
+         `Incident Datetime` = OccurredDate,
+         Neighborhood = Section) %>%
+  mutate(
+    City = "Rochester",
+    Latitude = as.numeric(Latitude),
+    Longitude = as.numeric(Longitude),
+    Year = as.character(year(mdy_hms(`Incident Datetime`)))  # Extract Year for reference
+  )
+
+# Combine datasets
+city_data <- bind_rows(buffalo_df, rochester_df)
+```
+
+```{r}
+# Create Leaflet map 
+leaflet(city_data) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~Longitude, ~Latitude,
+    popup = ~paste0("<b>Case:</b> ", `Case Number`, "<br>",
+                    "<b>Date:</b> ", `Incident Datetime`, "<br>",
+                    "<b>City:</b> ", City, "<br>",
+                    "<b>Neighborhood:</b> ", Neighborhood),
+    radius = 4,
+    color = "blue",
+    fillOpacity = 0.6,
+    clusterOptions = markerClusterOptions()  # Enable proper clustering
+  )
+
+```
+
+
+## Data Sources
+
+Rochester:
+<https://data-rpdny.opendata.arcgis.com/datasets/homicide-incidents-persons/explore?location=43.172822%2C-77.615280%2C12.11>.
+Buffalo:
+<https://data.buffalony.gov/Public-Safety/Crime-Incidents/d6g9-xbgu/explore/query/SELECT%0A%20%20%60case_number%60%2C%0A%20%20%60incident_datetime%60%2C%0A%20%20%60incident_id%60%2C%0A%20%20%60incident_type_primary%60%2C%0A%20%20%60incident_description%60%2C%0A%20%20%60parent_incident_type%60%2C%0A%20%20%60hour_of_day%60%2C%0A%20%20%60day_of_week%60%2C%0A%20%20%60address_1%60%2C%0A%20%20%60city%60%2C%0A%20%20%60state%60%2C%0A%20%20%60location%60%2C%0A%20%20%60latitude%60%2C%0A%20%20%60longitude%60%2C%0A%20%20%60created_at%60%2C%0A%20%20%60updated_at%60%2C%0A%20%20%60zip_code%60%2C%0A%20%20%60neighborhood%60%2C%0A%20%20%60council_district%60%2C%0A%20%20%60council_district_2011%60%2C%0A%20%20%60census_tract%60%2C%0A%20%20%60census_block_group%60%2C%0A%20%20%60census_block%60%2C%0A%20%20%60census_tract_2010%60%2C%0A%20%20%60census_block_group_2010%60%2C%0A%20%20%60census_block_2010%60%2C%0A%20%20%60police_district%60%2C%0A%20%20%60tractce20%60%2C%0A%20%20%60geoid20_tract%60%2C%0A%20%20%60geoid20_blockgroup%60%2C%0A%20%20%60geoid20_block%60%0AWHERE%20caseless_one_of%28%60parent_incident_type%60%2C%20%22Homicide%22%29/page/filter>.
+
+
