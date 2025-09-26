@@ -1,5 +1,14 @@
 import subprocess
 
+#-----------------------------image.py-------------------------
+#This script is used to image virtual machines with needed applications, but is most definetely outdated.
+#Features:
+#-Runs multiple install types based on needs.
+#-Updates before installing
+#-Prompts for reboots
+#Use case:
+#Users can change and use their systems differently, and it may be needed to re-image them every night in cases similar to this.
+
 #Variables for bash command function
 showOutput = True #Shows ouput
 noShow = False #Doesn't show output
@@ -188,4 +197,5 @@ while run == True:
     else:
         #If no reboot, ask to run script again
         print(f"{Colors.Info}No reboot requested.{Colors.RESET}")
+
         run = yesOrNo("Do you want to run the script again?")
