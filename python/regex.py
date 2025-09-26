@@ -1,5 +1,13 @@
 import re
 
+#-----------------------------regex.py-------------------------
+#This script was used to learn regular expressions and their uses, I do not have the csv file source.
+#Features:
+#-Uses regez to match valid U.S. numbers
+#-Prints and saves output
+#Use case:
+#Clean up lists and databases in mass.
+
 class Colors:
     Error = '\033[91m' #User Errors
     Info = '\033[92m' #Information from the script
@@ -57,4 +65,5 @@ outputFile = "usaPhoneNums.txt"
 saveToFile(usaNumbers, outputFile)
 
 # Show where they are
+
 print(f"{Colors.Info}USA phone numbers have been extracted and saved to {outputFile}{Colors.RESET}")
