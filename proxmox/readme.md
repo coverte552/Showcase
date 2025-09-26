@@ -1,2 +1,2 @@
 # Proxmox
-Some quick cheat sheets I've made for myslef to refrence quickly.
+Some quick cheat sheets I've made for myself to refrence quickly.
