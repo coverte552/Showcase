@@ -1,6 +1,15 @@
 import subprocess
 import argparse
 
+#-----------------------------nice.py-------------------------
+#This script manages process priorities in Linux systems
+#Features:
+#-Lists running processes and their NICE values
+#-Adjusts NICE values based on PID
+#-Input Validation
+#Use case:
+#Adjusting CPU scheduling priority
+
 #Variables for bash command function
 showOutput = True #Shows ouput
 noShow = False #Doesn't show output
@@ -124,4 +133,5 @@ if (cli_args.nice != None):
         NICE = cli_args.nice
 
 #Execute the change Nice process, Nice.
+
 changeProcNICE(procID, NICE)
