@@ -1,3 +1,0 @@
-# Ubuntu 24.04 to Windows Server 2025 AD Join (Unsecured Method)
-1. Background & Problem
-Windows Server 2025 introduced a Kerberos protocol regression that breaks Linux domain joins. When using `realm join` or `adcli`, the process fails at the password setting stage due to a malformed Kerberos response from the domain controller.
