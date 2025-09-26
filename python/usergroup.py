@@ -1,6 +1,15 @@
 import subprocess
 import shutil
 
+#-----------------------------usergroup.py-------------------------
+#This script creates users and groups, adds users to groups, and grants sudo permissions to said groups.
+#Features:
+#-Interactive Menu
+#-Validation
+#-Troubleshooting Menu
+#Use case:
+#Managing large groups of users in a linux enviroment
+
 #Commands for troubleshooting:
 # Switch to root user: sudo su - 
 # Create User: useradd {user}
@@ -281,6 +290,7 @@ while True:
         print(f"\n{Colors.Error}Invalid choice. They are 1-6 numbskull.{Colors.RESET}")
     print("")
     
+
 
 
 
