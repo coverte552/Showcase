@@ -2,6 +2,7 @@
 
 This repository contains R and RStudio projects focused on analyzing and visualizing criminal justice data.  
 All scripts and visualizations are written in **R** and structured for reproducibility.
+You can import these folders into your own R enviroment to see them.
 
 ---
 
